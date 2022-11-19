@@ -13,6 +13,8 @@ This is not meant to be a replacement for MongoDB or CouchDB, but rather a simpl
 
 #### Gliph
 
+    import Gliph from 'gliph';
+
 ##### Gliph.setDBPath(path, callback)
 
 Sets the path to the database. This function must be called before any other function.

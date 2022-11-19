@@ -1,6 +1,3 @@
-// document database that has a folder acts as a table and files inside the folder acts as rows (with strict schema validation)
-// the document database is a key-value store, where the key is the file name and the value is the file content
-
 import FQ from 'filequeue-gliph';
 import { randomBytes } from 'crypto';
 import { resolve } from 'path';
@@ -38,8 +35,6 @@ db.setDBPath = function(path, callback) {
     })
 }
 
-
-
 db.table = function(table, callback) {
 
     if(isWindows) {
@@ -47,8 +42,6 @@ db.table = function(table, callback) {
     } else {
         tablePath = __dirname + '/' + table
     }
-    console.log('creating table ' + tablePath);
-    
     // check if table exists
     fs.exists(tablePath, function(exists) {
         if (exists) {

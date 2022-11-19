@@ -2,6 +2,7 @@ import db from './index.js'
 
 // run tests
 
+var time = new Date().getTime()
 db.setDBPath('./db', (err, res) => {
     // tell us if there was an error
     if (err) {
@@ -57,6 +58,8 @@ db.setDBPath('./db', (err, res) => {
                                                     console.log("fail: delete")
                                                 } else {
                                                     console.log("success: delete")
+
+                                                    console.log("All tests passed in " + (new Date().getTime() - time) + "ms")
                                                 }
                                             })
                                         })
