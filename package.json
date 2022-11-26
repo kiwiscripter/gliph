@@ -3,7 +3,7 @@
     "filequeue-gliph": "^0.5.0"
   },
   "name": "gliph",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -12,5 +12,9 @@
   "keywords": [],
   "author": "Kiwiscripter",
   "license": "ISC",
-  "description": "Basic nosql document database"
+  "description": "Basic nosql document database",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiwiscripter/gliph.git"
+  }
 }

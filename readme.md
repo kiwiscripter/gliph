@@ -9,70 +9,44 @@ This is not meant to be a replacement for MongoDB or CouchDB, but rather a simpl
 
     npm install gliph
 
-### API Documentation
+### Documentation
 
 #### Gliph
 
     import Gliph from 'gliph';
 
-##### Gliph.setDBPath(path, callback)
+##### Gliph.setPath(path) -> Promise (void)
 
-Sets the path to the database. This function must be called before any other function.
+Sets the path to the database. Returns a promise that resolves when the database is ready.
 
-    Gliph.setDBPath('./db', function(err, dir) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log('Database path set to ' + dir);
-        }
-    });
+##### Gliph.get(table, id) -> Promise (object)
 
-##### Gliph.table(name, callback)
+Gets a document from the database. Returns a promise that resolves with the document.
 
-Creates a new table. (does nothing if it already exists)
+##### Gliph.table(table) -> Promise  (functions (all that are listed below except Gliph.table))
 
-    Gliph.table('users', function(err, tablePath) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log('Table created at ' + tablePath);
-        }
-    });
+~table parameter is not required when you use the functions that are a result of Gliph.table(table).~
 
-##### Gliph.update(table, row, newData, callback)
+Returns an object with functions that are bound to the table.
 
-Updates a row in a table.
+##### Gliph.get(id) -> Promise (object)
 
-    Gliph.update('users', {name: 'John'}, {name: 'John', age: 25}, function(err, row) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log('Row updated: ' + row);
-        }
-    });
+Gets a document from the database. Returns a promise that resolves with the document.
 
-##### Gliph.insert(table, row, callback)
+##### Gliph.getWithFilter(filter) -> Promise (array)
 
-Inserts a row into a table.
+Gets all documents from the database that match the filter. Returns a promise that resolves with an array of documents.
 
-    Gliph.insert('users', {name: 'John', age: 25}, function(err, row) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log('Row inserted: ' + row);
-        }
-    });
+##### Gliph.insert(document) -> Promise (object)
 
-##### Gliph.delete(table, row, callback)
+Inserts a document into the database. Returns a promise that resolves with the inserted document.
 
-Deletes a row from a table.
+##### Gliph.update(id, document) -> Promise (object)
 
-    Gliph.delete('users', {name: 'John'}, function(err, row) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log('Row deleted: ' + row);
-        }
-    });
+Updates a document in the database. Returns a promise that resolves with the updated document.
 
-## that's all for now, happy creating!
+##### Gliph.delete(id) -> Promise (object)
+
+Deletes a document from the database. Returns a promise that resolves with the deleted document.
+
+### Have fun with Gliph!

@@ -9,61 +9,106 @@ var __dirname
 
 var db = {}
 
-var fs = new FQ(1000)
+var fs = new FQ(2000)
 
 var isWindows = process.platform === 'win32';
 
-db.setDBPath = function(path, callback) {
-    __dirname = path;
+db.dbpath = async function (path) {
     __dirname = resolve(path || process.cwd());
-    
-    // check if db path exists
-    // make sure db path is in the same directory as the index.js file that is using this module
-    fs.exists(__dirname, function(exists) {
-        
-        if(!exists) {
-            fs.mkdir(__dirname, function(err) {
-                if(err) {
-                    callback(err)
-                    return
-                }
-                callback(null, __dirname)
-            })
-        } else {
-            callback(null, __dirname)
-        }
+    // check if db exists
+    return new Promise(function (resolve, reject) {
+        fs.exists(__dirname, function (exists) {
+            if (exists) {
+                resolve()
+            } else {
+                fs.mkdir(__dirname, function (err) {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve()
+                    }
+                })
+            }
+        })
     })
+
 }
 
-db.table = function(table, callback) {
 
-    if(isWindows) {
+db.table = async function (table) {
+
+    if (isWindows) {
         tablePath = __dirname + '\\' + table
     } else {
         tablePath = __dirname + '/' + table
     }
     // check if table exists
-    fs.exists(tablePath, function(exists) {
-        if (exists) {
-            // table exists
-            callback(null, tablePath);
-        } else {
-            // table does not exist
-            // create table
-            fs.mkdir(tablePath, function(err) {
-                if (err) {
-                    callback(err);
-                } else {
-                    callback(null, tablePath);
+    return new Promise(function (resolve, reject) {
+        fs.exists(tablePath, function (exists) {
+            if (exists) {
+                // table exists
+                var tableObj = {
+                    path: tablePath,
+                    insert: function (row) {
+                        return db.insert(table, row);
+                    },
+                    update: function (row, newData) {
+                        return db.update(table, row, newData);
+                    },
+                    getWithFilter: function (filter) {
+                        return db.getWithFilter(table, filter);
+                    },
+                    get: function (id) {
+                        return db.get(table, id);
+                    },
+                    delete: function (id) {
+                        return db.delete(table, id);
+                    },
+                    count: function () {
+                        return db.count(table);
+                    }
                 }
-            });
-        }
+                resolve(tableObj);
+            } else {
+                // table does not exist
+                // create table
+                fs.mkdir(tablePath, function (err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        var tableObj = {
+                            path: tablePath,
+                            insert: function (row) {
+                                return db.insert(table, row);
+                            },
+                            update: function (row, newData) {
+                                return db.update(table, row, newData);
+                            },
+                            getWithFilter: function (filter) {
+                                return db.getWithFilter(table, filter);
+                            },
+                            get: function (id) {
+                                return db.get(table, id);
+                            },
+                            delete: function (id) {
+                                return db.delete(table, id);
+                            },
+                            count: function () {
+                                return db.count(table);
+                            }
+                        }
+
+                        resolve(tableObj);
+                    }
+                });
+            }
+        })
     });
 }
 
-db.insert = function(table, row, callback) {
-    
-    if(isWindows) {
+db.insert = async function (table, row) {
+
+    if (isWindows) {
         tablePath = __dirname + '\\' + table
     } else {
         tablePath = __dirname + '/' + table
@@ -71,234 +116,257 @@ db.insert = function(table, row, callback) {
 
     // create a random id
     var id = randomBytes(16).toString('hex');
+    return new Promise(function (resolve, reject) {
+        fs.exists(tablePath, function (exists) {
+            if (!exists) {
 
-    fs.exists(tablePath, function(exists) {
-        if (!exists) {
+                db.table(tablePath, function (err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        if (!row.id) {
+                            row.id = id;
+                        }
 
-            db.table(tablePath, function(err) {
-                if (err) {
-                    callback(err);
-                } else {
-                    if(!row.id) {
-                        row.id = id;
+                        if (isWindows) {
+                            var rowPath = __dirname + '\\' + table + '\\' + row.id;
+                        } else {
+                            var rowPath = __dirname + '/' + table + '/' + row.id;
+                        }
+
+                        fs.writeFile(rowPath, JSON.stringify(row), function (err) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(row);
+                            }
+                        });
+                    }
+                });
+            } else {
+                if (!row.id) {
+                    row.id = id;
+                }
+
+                if (isWindows) {
+                    var rowPath = __dirname + '\\' + table + '\\' + row.id;
+                }
+                else {
+                    var rowPath = __dirname + '/' + table + '/' + row.id;
+                }
+                fs.writeFile(rowPath, JSON.stringify(row), function (err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(row);
+                    }
+                });
+            }
+        });
+    });
+}
+
+db.getWithFilter = async function (table, filter) {
+
+    if (isWindows) {
+        tablePath = __dirname + '\\' + table
+    } else {
+        tablePath = __dirname + '/' + table
+    }
+    return new Promise(function (resolve, reject) {
+        fs.exists(tablePath, function (exists) {
+            // check if table exists
+            if (exists) {
+                // table exists
+                // get all rows
+                fs.readdir(tablePath, function (err, files) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        var rows = [];
+                        var count = 0;
+                        files.forEach(function (file) {
+                            if (isWindows) {
+                                var rowPath = __dirname + '\\' + table + '\\' + file;
+                            } else {
+                                var rowPath = __dirname + '/' + table + '/' + file;
+                            }
+
+                            // read the row
+
+                            var row = fs.readFile(rowPath, function (err, data) {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    var row = JSON.parse(data);
+                                    // check if the row matches the filter
+                                    var match = true;
+                                    for (var key in filter) {
+                                        if (row[key] != filter[key]) {
+                                            match = false;
+                                        }
+                                    }
+                                    if (match) {
+                                        rows.push(row);
+                                    }
+                                    count++;
+                                    if (count == files.length) {
+                                        resolve(rows);
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+            } else {
+                // table does not exist
+                reject('table does not exist');
+            }
+        });
+    });
+}
+
+db.get = async function (table, id) {
+
+    if (isWindows) {
+        tablePath = __dirname + '\\' + table
+    } else {
+        tablePath = __dirname + '/' + table
+    }
+    return new Promise(function (resolve, reject) {
+        fs.exists(tablePath, function (exists) {
+            // check if table exists
+            if (exists) {
+                // table exists
+                // get all rows
+                fs.readdir(tablePath, function (err, files) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        var rows = [];
+                        var count = 0;
+                        files.forEach(function (file) {
+                            if (isWindows) {
+                                var rowPath = __dirname + '\\' + table + '\\' + file;
+                            } else {
+                                var rowPath = __dirname + '/' + table + '/' + file;
+                            }
+
+                            // read the row
+
+                            var row = fs.readFile(rowPath, function (err, data) {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    var row = JSON.parse(data);
+                                    // check if the row matches the filter
+                                    var match = true;
+                                    if (row.id != id) {
+                                        match = false;
+                                    }
+                                    if (match) {
+                                        rows.push(row);
+                                    }
+                                    count++;
+                                    if (count == files.length) {
+                                        resolve(rows);
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+            } else {
+                // table does not exist
+                reject('table does not exist');
+            }
+        });
+    });
+}
+
+db.update = async function (table, row, newData) {
+    if (isWindows) {
+        tablePath = __dirname + '\\' + table
+    } else {
+        tablePath = __dirname + '/' + table
+    }
+    return new Promise(function (resolve, reject) {
+        (async () => {
+            try {
+                var data = await db.getWithFilter(table, row);
+                if (data.length > 0) {
+                    // row exists
+                    // update the row
+                    var row = data[0];
+                    for (var key in newData) {
+                        row[key] = newData[key];
                     }
                     
-                    if(isWindows) {
+                    if (isWindows) {
                         var rowPath = __dirname + '\\' + table + '\\' + row.id;
                     } else {
                         var rowPath = __dirname + '/' + table + '/' + row.id;
                     }
 
-                    fs.writeFile(rowPath, JSON.stringify(row), function(err) {
+                    fs.writeFile(rowPath, JSON.stringify(row), function (err) {
                         if (err) {
-                            callback(err);
+                            reject(err);
                         } else {
-                            callback(null, row);
+                            resolve(row);
                         }
                     });
-                }
-            });
-        } else {
-            if(!row.id) {
-                row.id = id;
-            }
-
-            if(isWindows) {
-                var rowPath = __dirname + '\\' + table + '\\' + row.id;
-            }
-            else {
-                var rowPath = __dirname + '/' + table + '/' + row.id;
-            }
-            fs.writeFile(rowPath, JSON.stringify(row), function(err) {
-                if (err) {
-                    callback(err);
-                } else {
-                    callback(null, row);
-                }
-            });
-        }
-    });
-}
-
-
-db.update = function(table, row, newData, callback){
-    
-    if(isWindows) {
-        tablePath = __dirname + '\\' + table
-    } else {
-        tablePath = __dirname + '/' + table
-    }
-
-    // search for the row with getWithFilter
-    db.getWithFilter(table, row, function(err, data) {
-        if (err) {
-            callback(err);
-        } else {
-            if (data.length > 0) {
-                // row exists
-                // update the row
-                if(isWindows) {
-                    var rowPath = __dirname + '\\' + table + '\\' + data[0].id;
-                } else {
-                    var rowPath = __dirname + '/' + table + '/' + data[0].id;
-                }
-                // only update the fields that are in the newData object
-                for (var key in newData) {
-                    data[0][key] = newData[key];
-                }
-                fs.writeFile(rowPath, JSON.stringify(data[0]), function(err) {
-                    if (err) {
-                        callback(err);
-                    } else {
-                        callback(null, data[0]);
-                    }
-                });
-            } else {
-                // row does not exist
-                callback('row does not exist');
-            }
-        }
-    });
-    
-}
-
-
-db.delete = function(table, id, callback) {
-    var rowPath
-    if(isWindows) {
-        tablePath = __dirname + '\\' + table
-        rowPath = __dirname + '\\' + table + '\\' + id;
-    } else {
-        tablePath = __dirname + '/' + table
-        rowPath = __dirname + '/' + table + '/' + id;
-    }
-
-    fs.exists(tablePath, function(exists) {
-        if (exists) {
-            // table exists
-            // check if row exists
-            fs.exists(rowPath, function(exists) {
-                if (exists) {
-                    // row exists
-                    // delete row
-
-                    fs.unlink(rowPath, function(err) {
-                        if (err) {
-                            callback(err);
-                        } else {
-                            callback(null, id);
-                        }
-                    }
-                    );
                 } else {
                     // row does not exist
-                    callback('row does not exist');
+                    reject('row does not exist');
                 }
-            });
-        } else {
-            // table does not exist
-            callback('table does not exist');
-        }
-    });
-    
-}
-
-db.get = function(table, id, callback) {
-    
-    if(isWindows) {
-        var rowPath = __dirname + '\\' + table + '\\' + id;
-    } else {
-        var rowPath = __dirname + '/' + table + '/' + id;
-    }
-
-    fs.exists(rowPath, function(exists) {
-        if (!exists) {
-            callback(new Error('row does not exist'));
-        } else {
-            fs.readFile(rowPath, function(err, data) {
-                if (err) {
-                    callback(err);
-                } else {
-                    callback(null, JSON.parse(data));
-                }
-            });
-        }
+            } catch (err) {
+                reject(err);
+            }
+        })();
     });
 }
 
+db.delete = async function (table, row) {
 
-db.getAll = function(table, callback) {
-    
-    if(isWindows) {
-        var tablePath = __dirname + '\\' + table;
+    if (isWindows) {
+        tablePath = __dirname + '\\' + table
     } else {
-        var tablePath = __dirname + '/' + table;
+        tablePath = __dirname + '/' + table
     }
-
-    fs.exists(tablePath, function(exists) {
-        if (!exists) {
-            callback(new Error('table '+table+' does not exist'));
-        } else {
-            fs.readdir(tablePath, function(err, files) {
-                if (err) {
-                    callback(err);
-                } else {
-                    tableRows = [];
-                    files.forEach(function(file) {
-                        if(isWindows) {
-                            var rowPath = __dirname + '\\' + table + '\\' + file;
+    return new Promise(function (resolve, reject) {
+        fs.exists(tablePath, function (exists) {
+            (async () => {
+                try {
+                    var data = await db.getWithFilter(table, row);
+                    if (data.length > 0) {
+                        // row exists
+                        // delete the row
+                        var row = data[0];
+                        if (isWindows) {
+                            var rowPath = __dirname + '\\' + table + '\\' + row.id;
                         } else {
-                            var rowPath = __dirname + '/' + table + '/' + file;
+                            var rowPath = __dirname + '/' + table + '/' + row.id;
                         }
-                        
-                        // read the file
-                        fs.readFile(rowPath, function(err, data) {
+
+                        // delete the row
+
+                        fs.unlink(rowPath, function (err) {
                             if (err) {
-                                callback(err);
+                                reject(err);
                             } else {
-                                tableRows.push(JSON.parse(data));
-                                if (tableRows.length == files.length) {
-                                    callback(null, tableRows);
-                                }
+                                resolve(row);
                             }
                         });
-                    });
-                }
-            });
-        }
-    });
-}
-
-
-
-
-db.getWithFilter = function(table, filter, callback) {
-    // fix path argument not being a string
-    if(isWindows) {
-        var tablePath = __dirname + '\\' + table;
-    } else {
-        var tablePath = __dirname + '/' + table;
-    }
-    db.getAll(table, function(err, rows) {
-        if (err) {
-            callback(err);
-        } else {
-            var filteredRows = [];
-            rows.forEach(function(row) {
-                var match = true;
-                for (var key in filter) {
-                    if (row[key] !== filter[key]) {
-                        match = false;
+                    } else {
+                        // row does not exist
+                        reject('row does not exist');
                     }
+                } catch (err) {
+                    reject(err);
                 }
-                if (match) {
-                    filteredRows.push(row);
-                }
-            });
-            callback(null, filteredRows);
-        }
+            })();
+        });
     });
-    
 }
 
-export default db
+export default db;
