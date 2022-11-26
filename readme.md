@@ -25,27 +25,27 @@ Gets a document from the database. Returns a promise that resolves with the docu
 
 ##### Gliph.table(table) -> Promise  (functions (all that are listed below except Gliph.table))
 
-~table parameter is not required when you use the functions that are a result of Gliph.table(table).~
+_NOTE: table parameter is not required when you use the functions that are a result of Gliph.table(table)._
 
 Returns an object with functions that are bound to the table.
 
-##### Gliph.get(id) -> Promise (object)
+##### Gliph.get(table, id) -> Promise (object)
 
 Gets a document from the database. Returns a promise that resolves with the document.
 
-##### Gliph.getWithFilter(filter) -> Promise (array)
+##### Gliph.getWithFilter(table,filter) -> Promise (array)
 
 Gets all documents from the database that match the filter. Returns a promise that resolves with an array of documents.
 
-##### Gliph.insert(document) -> Promise (object)
+##### Gliph.insert(table, document) -> Promise (object)
 
 Inserts a document into the database. Returns a promise that resolves with the inserted document.
 
-##### Gliph.update(id, document) -> Promise (object)
+##### Gliph.update(table, filter, document) -> Promise (object)
 
 Updates a document in the database. Returns a promise that resolves with the updated document.
 
-##### Gliph.delete(id) -> Promise (object)
+##### Gliph.delete(table, filter) -> Promise (object)
 
 Deletes a document from the database. Returns a promise that resolves with the deleted document.
 
