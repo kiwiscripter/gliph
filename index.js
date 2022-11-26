@@ -13,7 +13,7 @@ var fs = new FQ(2000)
 
 var isWindows = process.platform === 'win32';
 
-db.dbpath = async function (path) {
+async function setPath(path) {
     __dirname = resolve(path || process.cwd());
     // check if db exists
     return new Promise(function (resolve, reject) {
@@ -35,7 +35,7 @@ db.dbpath = async function (path) {
 }
 
 
-db.table = async function (table) {
+async function table(table) {
 
     if (isWindows) {
         tablePath = __dirname + '\\' + table
@@ -50,22 +50,22 @@ db.table = async function (table) {
                 var tableObj = {
                     path: tablePath,
                     insert: function (row) {
-                        return db.insert(table, row);
+                        return insert(table, row);
                     },
                     update: function (row, newData) {
-                        return db.update(table, row, newData);
+                        return update(table, row, newData);
                     },
                     getWithFilter: function (filter) {
-                        return db.getWithFilter(table, filter);
+                        return getWithFilter(table, filter);
                     },
                     get: function (id) {
-                        return db.get(table, id);
+                        return get(table, id);
                     },
                     delete: function (id) {
-                        return db.delete(table, id);
+                        return remove(table, id);
                     },
                     count: function () {
-                        return db.count(table);
+                        return count(table);
                     }
                 }
                 resolve(tableObj);
@@ -79,22 +79,22 @@ db.table = async function (table) {
                         var tableObj = {
                             path: tablePath,
                             insert: function (row) {
-                                return db.insert(table, row);
+                                return insert(table, row);
                             },
                             update: function (row, newData) {
-                                return db.update(table, row, newData);
+                                return update(table, row, newData);
                             },
                             getWithFilter: function (filter) {
-                                return db.getWithFilter(table, filter);
+                                return getWithFilter(table, filter);
                             },
                             get: function (id) {
-                                return db.get(table, id);
+                                return get(table, id);
                             },
                             delete: function (id) {
-                                return db.delete(table, id);
+                                return remove(table, id);
                             },
                             count: function () {
-                                return db.count(table);
+                                return count(table);
                             }
                         }
 
@@ -106,7 +106,7 @@ db.table = async function (table) {
     });
 }
 
-db.insert = async function (table, row) {
+async function insert(table, row) {
 
     if (isWindows) {
         tablePath = __dirname + '\\' + table
@@ -166,7 +166,7 @@ db.insert = async function (table, row) {
     });
 }
 
-db.getWithFilter = async function (table, filter) {
+async function getWithFilter(table, filter) {
 
     if (isWindows) {
         tablePath = __dirname + '\\' + table
@@ -226,7 +226,7 @@ db.getWithFilter = async function (table, filter) {
     });
 }
 
-db.get = async function (table, id) {
+async function get(table, id) {
 
     if (isWindows) {
         tablePath = __dirname + '\\' + table
@@ -284,7 +284,7 @@ db.get = async function (table, id) {
     });
 }
 
-db.update = async function (table, row, newData) {
+async function update(table, row, newData) {
     if (isWindows) {
         tablePath = __dirname + '\\' + table
     } else {
@@ -326,7 +326,7 @@ db.update = async function (table, row, newData) {
     });
 }
 
-db.delete = async function (table, row) {
+async function remove(table, row) {
 
     if (isWindows) {
         tablePath = __dirname + '\\' + table
@@ -369,4 +369,10 @@ db.delete = async function (table, row) {
     });
 }
 
-export default db;
+export {
+    table,
+    get,
+    getWithFilter,
+    update,
+    remove
+}

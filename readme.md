@@ -11,10 +11,6 @@ This is not meant to be a replacement for MongoDB or CouchDB, but rather a simpl
 
 ### Documentation
 
-#### Gliph
-
-    import Gliph from 'gliph';
-
 ##### Gliph.setPath(path) -> Promise (void)
 
 Sets the path to the database. Returns a promise that resolves when the database is ready.
@@ -45,8 +41,8 @@ Inserts a document into the database. Returns a promise that resolves with the i
 
 Updates a document in the database. Returns a promise that resolves with the updated document.
 
-##### Gliph.delete(table, filter) -> Promise (object)
+##### Gliph.remove(table, filter) -> Promise (object)
 
-Deletes a document from the database. Returns a promise that resolves with the deleted document.
+Removes a document from the database. Returns a promise that resolves with the deleted document.
 
 ### Have fun with Gliph!
