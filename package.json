@@ -3,7 +3,7 @@
     "filequeue-gliph": "^0.5.0"
   },
   "name": "gliph",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "main": "index.js",
   "type": "module",
   "scripts": {

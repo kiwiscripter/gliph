@@ -370,6 +370,7 @@ async function remove(table, row) {
 }
 
 export {
+    setPath,
     table,
     get,
     getWithFilter,
