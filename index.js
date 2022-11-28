@@ -337,7 +337,7 @@ async function remove(table, row) {
         fs.exists(tablePath, function (exists) {
             (async () => {
                 try {
-                    var data = await db.getWithFilter(table, row);
+                    var data = await getWithFilter(table, row);
                     if (data.length > 0) {
                         // row exists
                         // delete the row
