@@ -120,7 +120,7 @@ async function insert(table, row) {
         fs.exists(tablePath, function (exists) {
             if (!exists) {
 
-                db.table(tablePath, function (err) {
+                table(tablePath, function (err) {
                     if (err) {
                         reject(err);
                     } else {
@@ -293,7 +293,7 @@ async function update(table, row, newData) {
     return new Promise(function (resolve, reject) {
         (async () => {
             try {
-                var data = await dgetWithFilter(table, row);
+                var data = await getWithFilter(table, row);
                 if (data.length > 0) {
                     // row exists
                     // update the row
