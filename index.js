@@ -186,6 +186,7 @@ async function getWithFilter(table, filter) {
                         var rows = [];
                         var count = 0;
                         files.forEach(function (file) {
+
                             if (isWindows) {
                                 var rowPath = __dirname + '\\' + table + '\\' + file;
                             } else {
@@ -215,7 +216,14 @@ async function getWithFilter(table, filter) {
                                     }
                                 }
                             });
+
+                            // use this incase there was no rows
+                            
+
                         });
+                        if (files.length == 0) {
+                            resolve(rows);
+                        }
                     }
                 });
             } else {
